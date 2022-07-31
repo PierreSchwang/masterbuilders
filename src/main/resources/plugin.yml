@@ -1,0 +1,6 @@
+name: MasterBuilders
+version: 1.0.0
+main: de.pierreschwang.masterbuilders.MasterBuildersPlugin
+
+depend:
+  - WorldEdit
