@@ -1,5 +1,6 @@
 package de.pierreschwang.masterbuilders.schematic.provider;
 
+import com.sk89q.worldedit.math.BlockVector3;
 import de.pierreschwang.masterbuilders.schematic.ISchematicProvider;
 import de.pierreschwang.masterbuilders.schematic.PlotSchematic;
 
@@ -27,4 +28,8 @@ public class StaticSchematicProvider implements ISchematicProvider {
         return this.margin;
     }
 
+    @Override
+    public BlockVector3 getDimension() {
+        return this.schematic.getDimensions();
+    }
 }

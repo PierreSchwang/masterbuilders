@@ -1,10 +1,11 @@
 package de.pierreschwang.masterbuilders.plot;
 
-import com.sk89q.worldedit.WorldEditException;
+import com.sk89q.worldedit.math.BlockVector2;
+import de.pierreschwang.masterbuilders.generator.PlotChunkGenerator;
+import de.pierreschwang.masterbuilders.schematic.extent.CachingChunkExtent;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
-import org.bukkit.generator.ChunkGenerator;
 
 import java.io.Closeable;
 import java.io.File;
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -19,24 +21,26 @@ public class PlotWorld implements Runnable, Closeable {
 
     private final World world;
     private final Logger logger;
-    private final PlotGrid grid;
+    private final CachingChunkExtent cachingChunkExtent;
 
     public PlotWorld(Logger logger, PlotGrid grid) {
         this.logger = logger;
-        this.grid = grid;
+        this.cachingChunkExtent = new CachingChunkExtent();
+        logger.log(Level.INFO, "wtf");
+        grid.populate(cachingChunkExtent);
         this.world = Bukkit.createWorld(
-                new WorldCreator("masterbuilders_plots").generator(new ChunkGenerator() {
-                }).generateStructures(false));
+                new WorldCreator("masterbuilders_plots").generator(new PlotChunkGenerator(cachingChunkExtent))
+        );
+        Objects.requireNonNull(world).setAutoSave(false);
     }
 
     @Override
     public void run() {
-        this.logger.info("Starting plot population - This may take a while");
-        try {
-            this.grid.populate();
-        } catch (WorldEditException e) {
-            this.logger.log(Level.SEVERE, "Plot population failed", e);
+        this.logger.log(Level.INFO, "Pre-generating {} chunks - This may take a while", this.cachingChunkExtent.chunks().size());
+        for (BlockVector2 chunk : this.cachingChunkExtent.chunks()) {
+            world.loadChunk(chunk.getX(), chunk.getZ(), true);
         }
+        this.logger.info("Chunk pre-generation finished");
     }
 
     @Override
@@ -51,4 +55,7 @@ public class PlotWorld implements Runnable, Closeable {
                 .forEach(File::delete);
     }
 
+    public World world() {
+        return world;
+    }
 }

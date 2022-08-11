@@ -1,5 +1,6 @@
 package de.pierreschwang.masterbuilders;
 
+import io.papermc.lib.PaperLib;
 import net.kyori.adventure.platform.AudienceProvider;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -18,6 +19,7 @@ public class MasterBuildersPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        PaperLib.suggestPaper(this);
         AUDIENCE_PROVIDER = BukkitAudiences.create(this);
         this.masterBuilders = new MasterBuilders(this);
         this.masterBuilders.run();

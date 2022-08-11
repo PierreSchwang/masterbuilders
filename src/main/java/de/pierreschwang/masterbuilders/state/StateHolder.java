@@ -15,7 +15,8 @@ public class StateHolder implements IHolder<IGameState> {
 
     @Override
     public void value(@NonNull IGameState value) {
-        this.currentState.stop();
+        if (this.currentState != null)
+            this.currentState.stop();
         (this.currentState = value).start();
     }
 

@@ -1,18 +1,10 @@
 package de.pierreschwang.masterbuilders.schematic;
 
 import com.google.common.base.Preconditions;
-import com.sk89q.worldedit.EditSession;
-import com.sk89q.worldedit.WorldEdit;
-import com.sk89q.worldedit.WorldEditException;
-import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormat;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats;
-import com.sk89q.worldedit.function.operation.Operation;
-import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
-import com.sk89q.worldedit.session.ClipboardHolder;
-import de.pierreschwang.masterbuilders.plot.Plot;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,18 +18,6 @@ public class PlotSchematic {
 
     private PlotSchematic(Clipboard clipboard) {
         this.clipboard = clipboard;
-    }
-
-    public void pasteBlocking(Plot plot) throws WorldEditException {
-        try (EditSession editSession = WorldEdit.getInstance().newEditSessionBuilder()
-                .world(BukkitAdapter.adapt(plot.center().getWorld()))
-                .build()) {
-            Operation op = new ClipboardHolder(this.clipboard)
-                    .createPaste(new MasterBuildersPastingExtent(plot, editSession))
-                    .to(BukkitAdapter.adapt(plot.center()).toVector().toBlockPoint())
-                    .build();
-            Operations.complete(op);
-        }
     }
 
     public BlockVector3 getDimensions() {
@@ -56,4 +36,7 @@ public class PlotSchematic {
         }
     }
 
+    public Clipboard clipboard() {
+        return clipboard;
+    }
 }

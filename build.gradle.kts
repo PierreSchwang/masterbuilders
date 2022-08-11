@@ -1,5 +1,8 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 plugins {
     id("java")
+    id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
 group = "de.pierreschwang"
@@ -21,9 +24,10 @@ dependencies {
         implementation("net.kyori:adventure-$it:4.11.0")
     }
     implementation("net.kyori:adventure-platform-bukkit:4.1.1")
+    implementation("io.papermc:paperlib:1.0.7")
     compileOnly("io.papermc.paper:paper-api:1.19-R0.1-SNAPSHOT")
-    implementation("com.sk89q.worldedit:worldedit-core:7.2.9")
-    implementation("com.sk89q.worldedit:worldedit-bukkit:7.2.9")
+    compileOnly("com.sk89q.worldedit:worldedit-core:7.2.9")
+    compileOnly("com.sk89q.worldedit:worldedit-bukkit:7.2.9")
 
     /* Testing */
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
@@ -32,4 +36,9 @@ dependencies {
 
 tasks.getByName<Test>("test") {
     useJUnitPlatform()
+}
+
+tasks.named<ShadowJar>("shadowJar") {
+    relocate("io.papermc.lib", "de.pierreschwang.masterbuilders.lib.paperlib")
+    relocate("net.kyori.adventure", "de.pierreschwang.masterbuilders.lib.adventure")
 }

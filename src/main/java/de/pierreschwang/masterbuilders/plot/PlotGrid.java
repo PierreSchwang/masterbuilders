@@ -2,21 +2,22 @@ package de.pierreschwang.masterbuilders.plot;
 
 import com.google.common.base.Preconditions;
 import com.sk89q.worldedit.WorldEditException;
+import com.sk89q.worldedit.function.operation.Operation;
+import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.session.ClipboardHolder;
 import de.pierreschwang.masterbuilders.schematic.ISchematicProvider;
-import org.bukkit.Location;
-import org.bukkit.World;
+import de.pierreschwang.masterbuilders.schematic.extent.CachingChunkExtent;
 
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class PlotGrid {
 
     private static final Logger GRID_LOGGER = Logger.getLogger("MasterBuilders/PlotGrid");
-
-    private static final int PLOT_MARGIN = 16;
     private final ISchematicProvider schematicProvider;
     private final Plot[][] grid;
 
@@ -25,14 +26,23 @@ public class PlotGrid {
         this.schematicProvider = schematicProvider;
     }
 
-    public void populate() throws WorldEditException {
+    public void populate(CachingChunkExtent extent) {
         for (Plot[] plots : this.grid) {
             for (Plot plot : plots) {
                 if (plot == null) {
                     continue;
                 }
-                this.schematicProvider.getSchematic().pasteBlocking(plot);
-                GRID_LOGGER.info("Populated plot @ " + plot.center());
+                System.out.println("The killer is escaping");
+                Operation operation = new ClipboardHolder(schematicProvider.getSchematic().clipboard())
+                        .createPaste(extent)
+                        .to(plot.center())
+                        .build();
+                try {
+                    Operations.complete(operation);
+                    GRID_LOGGER.info("Cached plot @ " + plot.center());
+                } catch (WorldEditException exception) {
+                    GRID_LOGGER.log(Level.SEVERE, "Failed to cache plot into caching extent", exception);
+                }
             }
         }
     }

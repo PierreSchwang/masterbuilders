@@ -2,8 +2,10 @@ package de.pierreschwang.masterbuilders;
 
 import de.pierreschwang.masterbuilders.api.IHolder;
 import de.pierreschwang.masterbuilders.config.MasterBuildersConfiguration;
+import de.pierreschwang.masterbuilders.listener.PlayerJoinListener;
 import de.pierreschwang.masterbuilders.plot.PlotGrid;
 import de.pierreschwang.masterbuilders.plot.PlotWorld;
+import de.pierreschwang.masterbuilders.schematic.ISchematicProvider;
 import de.pierreschwang.masterbuilders.schematic.provider.RandomSchematicProvider;
 import de.pierreschwang.masterbuilders.state.IGameState;
 import de.pierreschwang.masterbuilders.state.StateHolder;
@@ -32,6 +34,8 @@ public class MasterBuilders implements Closeable, Runnable, ForwardingAudience {
     protected MasterBuilders(MasterBuildersPlugin plugin) {
         this.plugin = plugin;
         this.allAudiences = List.of(MasterBuildersPlugin.AUDIENCE_PROVIDER.all());
+
+        plugin.getServer().getPluginManager().registerEvents(new PlayerJoinListener(this), plugin);
     }
 
     public void switchState(IGameState state) {
@@ -44,10 +48,8 @@ public class MasterBuilders implements Closeable, Runnable, ForwardingAudience {
 
     @Override
     public void run() {
-        this.grid = PlotGrid.create(
-                RandomSchematicProvider.ofFiles(Arrays.asList(plugin.getDataFolder().listFiles())),
-                this.configuration().teams()
-        );
+        ISchematicProvider schematicProvider = RandomSchematicProvider.ofFiles(Arrays.asList(plugin.getDataFolder().listFiles()));
+        this.grid = PlotGrid.create(schematicProvider, this.configuration().teams());
         this.plotWorld = new PlotWorld(plugin.getLogger(), this.grid);
         this.plotWorld.run();
         switchState(new LobbyState(this));
@@ -58,8 +60,12 @@ public class MasterBuilders implements Closeable, Runnable, ForwardingAudience {
         this.plotWorld.close();
     }
 
-    public MasterBuildersConfiguration configuration() {
+    public PlotWorld plotWorld() {
+        return plotWorld;
+    }
 
+    public MasterBuildersConfiguration configuration() {
+        return new MasterBuildersConfiguration();
     }
 
     @Override
